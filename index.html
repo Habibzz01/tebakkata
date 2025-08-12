@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Tebak Kata</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="dbs.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <nav class="nav">
+                <div class="logo">Game Tebak Kata</div>
+                <div class="nav-links">
+                    <a href="dashboard.html">Dashboard</a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                    <div id="authButtons">
+                        <a href="login.html" class="btn btn-primary">Login</a>
+                        <a href="daftar.html" class="btn btn-secondary">Daftar</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="game-container">
+            <div class="game-board animate-fadeIn">
+                <div id="gameArea">
+                    <div style="text-align: center;">
+                        <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Game Tebak Kata</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Tebak kata yang tersembunyi dengan petunjuk yang diberikan!</p>
+                        
+                        <div id="gameStats" style="display: none; margin-bottom: 2rem;">
+                            <div style="display: flex; justify-content: space-around; margin-bottom: 1rem;">
+                                <div>
+                                    <span style="color: var(--text-secondary);">Skor: </span>
+                                    <span id="currentScore" style="font-weight: 700; color: var(--primary-color);">0</span>
+                                </div>
+                                <div>
+                                    <span style="color: var(--text-secondary);">Nyawa: </span>
+                                    <span id="lives" style="font-weight: 700; color: var(--error-color);">❤️❤️❤️</span>
+                                </div>
+                                <div>
+                                    <span style="color: var(--text-secondary);">Level: </span>
+                                    <span id="level" style="font-weight: 700; color: var(--secondary-color);">1</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="startScreen">
+                            <button class="btn btn-primary" onclick="startGame()" style="font-size: 1.2rem; padding: 1rem 2rem;">
+                                🎮 Mulai Game
+                            </button>
+                        </div>
+                        
+                        <div id="gameScreen" style="display: none;">
+                            <div class="word-display" id="wordDisplay"></div>
+                            <div class="hint-display" id="hintDisplay"></div>
+                            <div class="keyboard" id="keyboard"></div>
+                        </div>
+                        
+                        <div id="gameOverScreen" style="display: none;">
+                            <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Game Over!</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Skor akhir Anda: <span id="finalScore" style="font-weight: 700; color: var(--primary-color);">0</span></p>
+                            <button class="btn btn-primary" onclick="restartGame()">Main Lagi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaderboard animate-fadeIn">
+                <h3 style="margin-bottom: 1rem; color: var(--primary-color);">🏆 Leaderboard</h3>
+                <div id="leaderboardList">
+                    <div class="spinner" style="margin: 2rem auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card animate-fadeIn" style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Cara Bermain</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div>
+                    <h4 style="color: var(--secondary-color);">🎯 Tujuan</h4>
+                    <p style="color: var(--text-secondary);">Tebak kata yang tersembunyi dengan memilih huruf yang benar.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary-color);">💡 Petunjuk</h4>
+                    <p style="color: var(--text-secondary);">Gunakan petunjuk yang diberikan untuk membantu menebak kata.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary-color);">❤️ Nyawa</h4>
+                    <p style="color: var(--text-secondary);">Anda memiliki 3 nyawa. Setiap salah tebak akan mengurangi 1 nyawa.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary-color);">🏆 Skor</h4>
+                    <p style="color: var(--text-secondary);">Dapatkan poin untuk setiap kata yang berhasil ditebak.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let currentWord = '';
+        let currentHint = '';
+        let currentCategory = '';
+        let currentDifficulty = '';
+        let guessedLetters = [];
+        let lives = 3;
+        let score = 0;
+        let level = 1;
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let gameActive = false;
+        let currentUser = null;
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+            
+            // Check authentication
+            auth.onAuthStateChanged(function(user) {
+                currentUser = user;
+                updateAuthUI();
+                loadLeaderboard();
+                loadQuestions();
+            });
+        });
+
+        // Update auth UI
+        function updateAuthUI() {
+            const authButtons = document.getElementById('authButtons');
+            if (currentUser) {
+                authButtons.innerHTML = `
+                    <span style="color: var(--text-secondary); margin-right: 1rem;">Halo, ${currentUser.displayName || 'User'}!</span>
+                    <button class="btn btn-error" onclick="logout()">Logout</button>
+                `;
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn btn-primary">Login</a>
+                    <a href="daftar.html" class="btn btn-secondary">Daftar</a>
+                `;
+            }
+        }
+
+        // Load questions
+        function loadQuestions() {
+            database.ref('questions').once('value')
+                .then((snapshot) => {
+                    questions = [];
+                    snapshot.forEach((childSnapshot) => {
+                        questions.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    
+                    // Shuffle questions
+                    questions.sort(() => Math.random() - 0.5);
+                });
+        }
+
+        // Load leaderboard
+        function loadLeaderboard() {
+            database.ref('leaderboard').orderByChild('score').limitToLast(10).once('value')
+                .then((snapshot) => {
+                    const leaderboardList = document.getElementById('leaderboardList');
+                    leaderboardList.innerHTML = '';
+                    
+                    const leaderboardData = [];
+                    snapshot.forEach((childSnapshot) => {
+                        leaderboardData.push({
+                            key: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    
+                    // Sort by score descending
+                    leaderboardData.sort((a, b) => b.score - a.score);
+                    
+                    if (leaderboardData.length === 0) {
+                        leaderboardList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Belum ada data</p>';
+                        return;
+                    }
+                    
+                    leaderboardData.forEach((entry, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'leaderboard-item';
+                        item.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <span class="rank">#${index + 1}</span>
+                                <div>
+                                    <div style="font-weight: 600;">${entry.name}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(entry.timestamp).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <div style="font-weight: 700; color: var(--primary-color);">${entry.score}</div>
+                        `;
+                        leaderboardList.appendChild(item);
+                    });
+                });
+        }
+
+        // Start game
+        function startGame() {
+            if (questions.length === 0) {
+                showToast('Belum ada soal yang tersedia!', 'error');
+                return;
+            }
+            
+            gameActive = true;
+            lives = 3;
+            score = 0;
+            level = 1;
+            currentQuestionIndex = 0;
+            guessedLetters = [];
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('gameStats').style.display = 'block';
+            
+            loadNextQuestion();
+        }
+
+        // Load next question
+        function loadNextQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                // End of questions, shuffle and restart
+                questions.sort(() => Math.random() - 0.5);
+                currentQuestionIndex = 0;
+                level++;
+            }
+            
+            const question = questions[currentQuestionIndex];
+            currentWord = question.word.toUpperCase();
+            currentHint = question.hint;
+            currentCategory = question.category;
+            currentDifficulty = question.difficulty;
+            guessedLetters = [];
+            
+            updateDisplay();
+            createKeyboard();
+        }
+
+        // Update display
+        function updateDisplay() {
+            // Update word display
+            const wordDisplay = document.getElementById('wordDisplay');
+            let displayWord = '';
+            for (let letter of currentWord) {
+                if (guessedLetters.includes(letter)) {
+                    displayWord += letter + ' ';
+                } else {
+                    displayWord += '_ ';
+                }
+            }
+            wordDisplay.textContent = displayWord.trim();
+            
+            // Update hint display
+            document.getElementById('hintDisplay').textContent = `💡 Petunjuk: ${currentHint}`;
+            
+            // Update game stats
+            document.getElementById('currentScore').textContent = score;
+            document.getElementById('level').textContent = level;
+            
+            // Update lives display
+            let livesDisplay = '';
+            for (let i = 0; i < lives; i++) {
+                livesDisplay += '❤️';
+            }
+            document.getElementById('lives').textContent = livesDisplay;
+        }
+
+        // Create keyboard
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            
+            letters.forEach(letter => {
+                const key = document.createElement('button');
+                key.className = 'key';
+                key.textContent = letter;
+                key.onclick = () => guessLetter(letter);
+                
+                if (guessedLetters.includes(letter)) {
+                    key.classList.add('used');
+                    key.disabled = true;
+                }
+                
+                keyboard.appendChild(key);
+            });
+        }
+
+        // Guess letter
+        function guessLetter(letter) {
+            if (!gameActive || guessedLetters.includes(letter)) return;
+            
+            guessedLetters.push(letter);
+            
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                showToast('Benar!', 'success');
+                
+                // Check if word is complete
+                let wordComplete = true;
+                for (let l of currentWord) {
+                    if (!guessedLetters.includes(l)) {
+                        wordComplete = false;
+                        break;
+                    }
+                }
+                
+                if (wordComplete) {
+                    // Word completed
+                    const points = getPointsForDifficulty(currentDifficulty);
+                    score += points;
+                    showToast(`Kata lengkap! +${points} poin`, 'success');
+                    
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        loadNextQuestion();
+                    }, 1500);
+                }
+            } else {
+                // Wrong guess
+                lives--;
+                showToast('Salah!', 'error');
+                
+                if (lives <= 0) {
+                    // Game over
+                    endGame();
+                }
+            }
+            
+            updateDisplay();
+            createKeyboard();
+        }
+
+        // Get points for difficulty
+        function getPointsForDifficulty(difficulty) {
+            switch(difficulty) {
+                case 'mudah': return 10;
+                case 'sedang': return 20;
+                case 'sulit': return 30;
+                default: return 10;
+            }
+        }
+
+        // End game
+        function endGame() {
+            gameActive = false;
+            
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            
+            // Save score to leaderboard if user is logged in
+            if (currentUser && score > 0) {
+                saveScoreToLeaderboard();
+            }
+            
+            // Update user statistics
+            if (currentUser) {
+                updateUserStats();
+            }
+        }
+
+        // Save score to leaderboard
+        function saveScoreToLeaderboard() {
+            const leaderboardEntry = {
+                name: currentUser.displayName || 'Anonymous',
+                score: score,
+                timestamp: new Date().toISOString(),
+                userId: currentUser.uid
+            };
+            
+            database.ref('leaderboard').push(leaderboardEntry)
+                .then(() => {
+                    loadLeaderboard();
+                });
+        }
+
+        // Update user statistics
+        function updateUserStats() {
+            database.ref('users/' + currentUser.uid).once('value')
+                .then((snapshot) => {
+                    const userData = snapshot.val() || {};
+                    const newTotalScore = (userData.totalScore || 0) + score;
+                    const newGamesPlayed = (userData.gamesPlayed || 0) + 1;
+                    
+                    database.ref('users/' + currentUser.uid).update({
+                        totalScore: newTotalScore,
+                        gamesPlayed: newGamesPlayed,
+                        lastPlayed: new Date().toISOString()
+                    });
+                });
+        }
+
+        // Restart game
+        function restartGame() {
+            startGame();
+        }
+
+        // Logout function
+        function logout() {
+            auth.signOut()
+                .then(() => {
+                    showToast('Logout berhasil!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1000);
+                })
+                .catch((error) => {
+                    showToast('Error: ' + error.message, 'error');
+                });
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

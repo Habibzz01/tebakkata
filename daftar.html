@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Game Tebak Kata</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="dbs.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <nav class="nav">
+                <div class="logo">Game Tebak Kata</div>
+                <div class="nav-links">
+                    <a href="index.html">Beranda</a>
+                    <a href="login.html">Login</a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                </div>
+            </nav>
+        </div>
+
+        <div class="card animate-fadeIn" style="max-width: 400px; margin: 2rem auto;">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">Daftar Akun</h2>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-input" id="fullName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Konfirmasi Password</label>
+                    <input type="password" class="form-input" id="confirmPassword" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Daftar</button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 1rem;">
+                <p style="color: var(--text-secondary);">Sudah punya akun? <a href="login.html" style="color: var(--primary-color);">Login di sini</a></p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <p style="color: var(--text-secondary);">Atau daftar dengan:</p>
+                <button class="btn btn-secondary" onclick="loginWithGoogle()" style="width: 100%; margin-top: 0.5rem;">
+                    <span style="margin-right: 0.5rem;">🔍</span> Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Register form submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showToast('Password tidak cocok!', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password minimal 6 karakter!', 'error');
+                return;
+            }
+            
+            // Create user with email and password
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Update user profile
+                    user.updateProfile({
+                        displayName: fullName
+                    }).then(() => {
+                        // Save user data to database
+                        database.ref('users/' + user.uid).set({
+                            fullName: fullName,
+                            email: email,
+                            createdAt: new Date().toISOString(),
+                            totalScore: 0,
+                            gamesPlayed: 0
+                        });
+                        
+                        showToast('Pendaftaran berhasil!', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1500);
+                    });
+                })
+                .catch((error) => {
+                    showToast('Error: ' + error.message, 'error');
+                });
+        });
+
+        // Login with Google
+        function loginWithGoogle() {
+            auth.signInWithPopup(googleProvider)
+                .then((result) => {
+                    const user = result.user;
+                    
+                    // Check if user exists in database
+                    database.ref('users/' + user.uid).once('value')
+                        .then((snapshot) => {
+                            if (!snapshot.exists()) {
+                                // Create new user record
+                                database.ref('users/' + user.uid).set({
+                                    fullName: user.displayName,
+                                    email: user.email,
+                                    createdAt: new Date().toISOString(),
+                                    totalScore: 0,
+                                    gamesPlayed: 0
+                                });
+                            }
+                            
+                            showToast('Login berhasil!', 'success');
+                            setTimeout(() => {
+                                window.location.href = 'dashboard.html';
+                            }, 1500);
+                        });
+                })
+                .catch((error) => {
+                    showToast('Error: ' + error.message, 'error');
+                });
+        }
+
+        // Check if user is already logged in
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
