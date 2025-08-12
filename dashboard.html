@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Tebak Kata</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-spell-check"></i> Tebak Kata
+            </a>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i> Beranda
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link active">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Profil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tambahsoal.html" class="nav-link">
+                        <i class="fas fa-plus-circle"></i> Tambah Soal
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="navbar-user">
+                <span class="navbar-username" id="userDisplayName">User</span>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1>Dashboard</h1>
+                <div class="dashboard-actions">
+                    <button class="btn btn-primary" id="startGameBtn">
+                        <i class="fas fa-play"></i> Mulai Bermain
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Dashboard Stats -->
+            <div class="dashboard-stats" id="dashboardStats">
+                <!-- Stats will be loaded dynamically -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <h3 class="dashboard-card-title">Memuat...</h3>
+                    <div class="dashboard-card-value">-</div>
+                    <p class="dashboard-card-description">Memuat statistik Anda</p>
+                </div>
+            </div>
+            
+            <!-- Game Section -->
+            <section class="game-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Game Tebak Kata</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="game-container" id="gameContainer" style="display: none;">
+                            <div class="game-info">
+                                <div class="score-display">
+                                    <i class="fas fa-star"></i> Skor: <span id="scoreDisplay">0</span>
+                                </div>
+                                <div class="timer-display">
+                                    <i class="fas fa-clock"></i> Waktu: <span id="timerDisplay">60</span>
+                                </div>
+                                <div class="lives-display" id="livesDisplay">
+                                    <i class="fas fa-heart"></i>
+                                    <i class="fas fa-heart"></i>
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="category-display" id="categoryDisplay"></div>
+                            
+                            <div class="word-display" id="wordDisplay">_ _ _ _ _</div>
+                            
+                            <div class="hint-box">
+                                <i class="fas fa-lightbulb"></i> Petunjuk: <span id="hintDisplay">Memuat petunjuk...</span>
+                            </div>
+                            
+                            <div class="keyboard" id="keyboard">
+                                <!-- Keyboard will be generated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <div class="game-intro" id="gameIntro">
+                            <p>Siap untuk menguji kemampuan vocabulari Anda? Klik tombol "Mulai Bermain" untuk memulai game tebak kata!</p>
+                            <div class="game-rules">
+                                <h3>Aturan Permainan:</h3>
+                                <ul>
+                                    <li>Anda memiliki 3 nyawa untuk setiap sesi permainan</li>
+                                    <li>Setiap huruf benar akan memberikan 10 poin</li>
+                                    <li>Menyelesaikan kata akan memberikan bonus 50 poin</li>
+                                    <li>Waktu permainan adalah 60 detik</li>
+                                    <li>Gunakan petunjuk untuk membantu menebak kata</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Recent Activity -->
+            <section class="recent-activity">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="recent-activity-title">Aktivitas Terkini</h2>
+                    </div>
+                    <div class="card-body" id="recentActivity">
+                        <!-- Activity will be loaded dynamically -->
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin"></i> Memuat aktivitas terkini...
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Leaderboard Preview -->
+            <section class="leaderboard-preview">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="card-title">Papan Peringkat</h2>
+                        <a href="index.html#leaderboard" class="btn btn-sm btn-outline">Lihat Semua</a>
+                    </div>
+                    <div class="card-body">
+                        <ul class="leaderboard-list" id="leaderboardList">
+                            <li class="leaderboard-item">
+                                <div class="leaderboard-rank">#1</div>
+                                <div class="leaderboard-name">Memuat...</div>
+                                <div class="leaderboard-score">-</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Game Over Modal -->
+    <div class="game-over-modal" id="gameOverModal" style="display: none;">
+        <div class="game-over-content">
+            <h2 class="modal-title" id="gameOverTitle">Game Over</h2>
+            <p class="modal-message" id="gameOverMessage">The word was: EXAMPLE</p>
+            <p class="modal-score" id="gameOverScore">Your score: 0</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="playAgainBtn">
+                    <i class="fas fa-redo"></i> Main Lagi
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('gameOverModal').style.display='none'">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <p>&copy; 2023 Tebak Kata. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Tentang</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-container" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="dbs.js"></script>
+    <script src="sc.js"></script>
+</body>
+</html>

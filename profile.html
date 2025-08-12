@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Tebak Kata</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-spell-check"></i> Tebak Kata
+            </a>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i> Beranda
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link active">
+                        <i class="fas fa-user"></i> Profil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tambahsoal.html" class="nav-link">
+                        <i class="fas fa-plus-circle"></i> Tambah Soal
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="navbar-user">
+                <span class="navbar-username" id="userDisplayName">User</span>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <div class="profile-container">
+                <!-- Profile Sidebar -->
+                <div class="profile-sidebar">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3 id="profileDisplayName">Memuat...</h3>
+                            <p class="text-secondary" id="profileEmail">memuat@email.com</p>
+                            
+                            <div class="profile-stats">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="userGamesPlayed">0</div>
+                                    <div class="stat-label">Permainan</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="userHighestScore">0</div>
+                                    <div class="stat-label">Skor Tertinggi</div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-danger btn-block mt-4" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> Keluar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Content -->
+                <div class="profile-content">
+                    <!-- Edit Profile Section -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-user-edit"></i> Edit Profil
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm">
+                                <div class="form-group">
+                                    <label for="profileUsername" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="profileUsername" placeholder="Masukkan username baru" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="profileEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="profileEmail" readonly>
+                                    <small class="form-text">Email tidak dapat diubah. Hubungi admin jika perlu mengubah email.</small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Simpan Perubahan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Change Password Section -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-key"></i> Ubah Password
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="changePasswordForm">
+                                <div class="form-group">
+                                    <label for="currentPassword" class="form-label">Password Saat Ini</label>
+                                    <input type="password" class="form-control" id="currentPassword" placeholder="Masukkan password saat ini" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="newPassword" class="form-label">Password Baru</label>
+                                    <input type="password" class="form-control" id="newPassword" placeholder="Masukkan password baru" required>
+                                    <div class="password-strength">
+                                        <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                                    </div>
+                                    <small class="form-text" id="passwordStrengthText"></small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirmNewPassword" class="form-label">Konfirmasi Password Baru</label>
+                                    <input type="password" class="form-control" id="confirmNewPassword" placeholder="Konfirmasi password baru" required>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-key"></i> Ubah Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Danger Zone Section -->
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h2 class="card-title">
+                                <i class="fas fa-exclamation-triangle"></i> Zona Berbahaya
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Tindakan di bawah ini bersifat permanen dan tidak dapat dibatalkan. Harap berhati-hati.
+                            </div>
+                            
+                            <div class="danger-action">
+                                <h3>Hapus Akun</h3>
+                                <p>Menghapus akun Anda akan menghapus semua data Anda secara permanen dari sistem kami.</p>
+                                <button class="btn btn-danger" id="deleteAccountBtn">
+                                    <i class="fas fa-trash-alt"></i> Hapus Akun Saya
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <p>&copy; 2023 Tebak Kata. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Tentang</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-container" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="dbs.js"></script>
+    <script src="sc.js"></script>
+</body>
+</html>

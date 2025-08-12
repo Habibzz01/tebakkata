@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Soal - Tebak Kata</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-spell-check"></i> Tebak Kata
+            </a>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i> Beranda
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Profil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tambahsoal.html" class="nav-link active">
+                        <i class="fas fa-plus-circle"></i> Tambah Soal
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="navbar-user">
+                <span class="navbar-username" id="userDisplayName">User</span>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1>Manajemen Soal</h1>
+                <p>Tambah, edit, atau hapus soal untuk game tebak kata</p>
+            </div>
+            
+            <div class="row">
+                <!-- Form Section -->
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-plus-circle"></i> <span id="formTitle">Tambah Soal Baru</span>
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="questionForm">
+                                <input type="hidden" id="questionId">
+                                
+                                <div class="form-group">
+                                    <label for="questionWord" class="form-label">Kata</label>
+                                    <input type="text" class="form-control" id="questionWord" placeholder="Masukkan kata yang akan ditebak" required>
+                                    <small class="form-text">Kata yang akan ditebak oleh pemain</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="questionHint" class="form-label">Petunjuk</label>
+                                    <textarea class="form-control" id="questionHint" rows="3" placeholder="Masukkan petunjuk untuk kata" required></textarea>
+                                    <small class="form-text">Petunjuk yang akan membantu pemain menebak kata</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="questionCategory" class="form-label">Kategori</label>
+                                    <select class="form-control" id="questionCategory" required>
+                                        <option value="">Pilih kategori</option>
+                                        <option value="Hewan">Hewan</option>
+                                        <option value="Buah">Buah</option>
+                                        <option value="Teknologi">Teknologi</option>
+                                        <option value="Olahraga">Olahraga</option>
+                                        <option value="Makanan">Makanan</option>
+                                        <option value="Kendaraan">Kendaraan</option>
+                                        <option value="Alam">Alam</option>
+                                        <option value="Sains">Sains</option>
+                                        <option value="Seni">Seni</option>
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
+                                    <small class="form-text">Kategori untuk mengelompokkan soal</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> <span id="submitButtonText">Simpan Soal</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display: none;">
+                                        <i class="fas fa-times"></i> Batal
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Questions List Section -->
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="card-title">
+                                <i class="fas fa-list"></i> Daftar Soal
+                            </h2>
+                            <div class="form-group mb-0">
+                                <input type="text" class="form-control" id="searchQuestions" placeholder="Cari soal...">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="questionList">
+                                <div class="text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Memuat daftar soal...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Statistics Section -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="stat-value" id="totalQuestions">0</div>
+                            <div class="stat-label">Total Soal</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="stat-value" id="totalCategories">0</div>
+                            <div class="stat-label">Total Kategori</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="stat-value" id="recentlyAdded">0</div>
+                            <div class="stat-label">Ditambahkan Hari Ini</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <p>&copy; 2023 Tebak Kata. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Tentang</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-container" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="dbs.js"></script>
+    <script src="sc.js"></script>
+    
+    <script>
+        // Load questions when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuestions();
+            loadQuestionStats();
+            
+            // Set up search functionality
+            const searchInput = document.getElementById('searchQuestions');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterQuestions(searchTerm);
+                });
+            }
+            
+            // Set up cancel edit button
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', () => {
+                    document.getElementById('questionForm').reset();
+                    document.getElementById('questionId').value = '';
+                    document.getElementById('formTitle').textContent = 'Tambah Soal Baru';
+                    document.getElementById('submitButtonText').textContent = 'Simpan Soal';
+                    cancelEditBtn.style.display = 'none';
+                });
+            }
+        });
+        
+        // Filter questions based on search term
+        function filterQuestions(searchTerm) {
+            const questionItems = document.querySelectorAll('.question-item');
+            
+            questionItems.forEach(item => {
+                const word = item.querySelector('h4').textContent.toLowerCase();
+                const hint = item.querySelector('p').textContent.toLowerCase();
+                const category = item.querySelectorAll('p')[1].textContent.toLowerCase();
+                
+                if (word.includes(searchTerm) || hint.includes(searchTerm) || category.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // Load question statistics
+        function loadQuestionStats() {
+            questionsRef.once('value', snapshot => {
+                const questions = [];
+                const categories = new Set();
+                let todayCount = 0;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                snapshot.forEach(childSnapshot => {
+                    const question = childSnapshot.val();
+                    questions.push(question);
+                    
+                    if (question.category) {
+                        categories.add(question.category);
+                    }
+                    
+                    if (question.createdAt) {
+                        const questionDate = new Date(question.createdAt);
+                        questionDate.setHours(0, 0, 0, 0);
+                        
+                        if (questionDate.getTime() === today.getTime()) {
+                            todayCount++;
+                        }
+                    }
+                });
+                
+                // Update statistics
+                document.getElementById('totalQuestions').textContent = questions.length;
+                document.getElementById('totalCategories').textContent = categories.size;
+                document.getElementById('recentlyAdded').textContent = todayCount;
+            });
+        }
+    </script>
+</body>
+</html>

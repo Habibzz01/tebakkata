@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tebak Kata - Game Kata Online</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-spell-check"></i> Tebak Kata
+            </a>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link active">
+                        <i class="fas fa-home"></i> Beranda
+                    </a>
+                </li>
+                <li class="nav-item auth-only">
+                    <a href="dashboard.html" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item auth-only">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Profil
+                    </a>
+                </li>
+                <li class="nav-item auth-only">
+                    <a href="tambahsoal.html" class="nav-link">
+                        <i class="fas fa-plus-circle"></i> Tambah Soal
+                    </a>
+                </li>
+                <li class="nav-item no-auth-only">
+                    <a href="login.html" class="nav-link">
+                        <i class="fas fa-sign-in-alt"></i> Masuk
+                    </a>
+                </li>
+                <li class="nav-item no-auth-only">
+                    <a href="daftar.html" class="nav-link">
+                        <i class="fas fa-user-plus"></i> Daftar
+                    </a>
+                </li>
+            </ul>
+            
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero">
+                <h1 class="hero-title">Tebak Kata</h1>
+                <p class="hero-subtitle">Uji kemampuan vocabulari Anda dengan game tebak kata yang menantang dan seru!</p>
+                
+                <div class="btn-group">
+                    <a href="login.html" class="btn btn-primary no-auth-only">
+                        <i class="fas fa-play"></i> Mulai Bermain
+                    </a>
+                    <a href="daftar.html" class="btn btn-secondary no-auth-only">
+                        <i class="fas fa-user-plus"></i> Daftar Sekarang
+                    </a>
+                    <a href="dashboard.html" class="btn btn-primary auth-only">
+                        <i class="fas fa-play"></i> Lanjutkan Bermain
+                    </a>
+                </div>
+            </section>
+            
+            <!-- Features Section -->
+            <section class="features">
+                <h2 class="text-center mb-4">Fitur Game</h2>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <h3>Leaderboard</h3>
+                                <p>Bersaing dengan pemain lain dan raih posisi teratas di papan peringkat!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <h3>Berbagai Kategori</h3>
+                                <p>Pilih dari berbagai kategori kata untuk meningkatkan pengetahuan Anda!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h3>Statistik Pemain</h3>
+                                <p>Lacak perkembangan Anda dengan statistik permainan yang detail!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Leaderboard Section -->
+            <section class="leaderboard">
+                <h2 class="leaderboard-title">Papan Peringkat</h2>
+                <ul class="leaderboard-list" id="leaderboardList">
+                    <li class="leaderboard-item">
+                        <div class="leaderboard-rank">#1</div>
+                        <div class="leaderboard-name">Memuat...</div>
+                        <div class="leaderboard-score">-</div>
+                    </li>
+                </ul>
+            </section>
+            
+            <!-- How to Play Section -->
+            <section class="how-to-play">
+                <h2 class="text-center mb-4">Cara Bermain</h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3><i class="fas fa-gamepad"></i> Aturan Dasar</h3>
+                                <ol>
+                                    <li>Anda akan diberikan kata yang harus ditebak</li>
+                                    <li>Huruf-huruf kata akan disembunyikan</li>
+                                    <li>Gunakan keyboard untuk menebak huruf</li>
+                                    <li>Setiap huruf benar akan menghasilkan 10 poin</li>
+                                    <li>Menyelesaikan kata akan memberikan bonus 50 poin</li>
+                                    <li>Anda memiliki 3 kesempatan (nyawa) untuk setiap kata</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3><i class="fas fa-lightbulb"></i> Tips & Trik</h3>
+                                <ul>
+                                    <li>Perhatikan petunjuk yang diberikan</li>
+                                    <li>Mulai dengan huruf umum seperti A, E, I, O, U</li>
+                                    <li>Perhatikan kategori kata untuk mempersempit pilihan</li>
+                                    <li>Manfaatkan waktu dengan bijak</li>
+                                    <li>Bermain secara teratur untuk meningkatkan skor</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div>
+                <p>&copy; 2023 Tebak Kata. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Tentang</a>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+                <a href="#" class="footer-link">Kontak</a>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="spinner-container" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="dbs.js"></script>
+    <script src="sc.js"></script>
+</body>
+</html>
