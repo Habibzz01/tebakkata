@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Soal - Tebak Kata</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-gamepad"></i>
+        <span>Tebak Kata</span>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="tambahsoal.html" class="nav-link active">Tambah Soal</a>
+        <button class="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container dashboard-grid">
+    <aside class="sidebar">
+      <div class="sidebar-menu">
+        <div class="sidebar-item">
+          <a href="dashboard.html" class="sidebar-link">
+            <i class="fas fa-home"></i> Beranda
+          </a>
+        </div>
+        <div class="sidebar-item">
+          <a href="dashboard.html" class="sidebar-link">
+            <i class="fas fa-play-circle"></i> Mainkan Sekarang
+          </a>
+        </div>
+        <div class="sidebar-item">
+          <a href="tambahsoal.html" class="sidebar-link active">
+            <i class="fas fa-plus-circle"></i> Tambah Soal
+          </a>
+        </div>
+        <div class="sidebar-item">
+          <a href="#" class="sidebar-link">
+            <i class="fas fa-history"></i> Riwayat Permainan
+          </a>
+        </div>
+        <div class="sidebar-item">
+          <a href="profile.html" class="sidebar-link">
+            <i class="fas fa-cog"></i> Pengaturan
+          </a>
+        </div>
+      </div>
+    </aside>
+    
+    <main class="main-content">
+      <div class="question-form">
+        <div class="card">
+          <h2>Tambah Soal Baru</h2>
+          <p>Tambahkan kata dan petunjuk untuk permainan tebak kata</p>
+          
+          <form id="question-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="word">Kata</label>
+                <input type="text" id="word" class="input-field" required placeholder="Masukkan kata (misal: INDONESIA)">
+              </div>
+              
+              <div class="form-group">
+                <label for="hint">Petunjuk</label>
+                <input type="text" id="hint" class="input-field" required placeholder="Masukkan petunjuk (misal: Negara dengan ribuan pulau)">
+              </div>
+            </div>
+            
+            <button type="button" id="save-question" class="btn btn-primary" style="width: 100%;">
+              <i class="fas fa-save"></i> Simpan Soal
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <div class="questions-container">
+        <h2>Daftar Soal</h2>
+        <p>Kelola soal yang telah Anda tambahkan</p>
+        
+        <div id="questions-list">
+          <!-- Questions will be loaded here by JavaScript -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="dbs.js"></script>
+  <script src="sc.js"></script>
+</body>
+</html>

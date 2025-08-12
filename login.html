@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk - Tebak Kata</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-gamepad"></i>
+        <span>Tebak Kata</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">Beranda</a>
+        <button class="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="auth-container">
+    <div class="card auth-card">
+      <div class="auth-header">
+        <h1 id="auth-title">Masuk ke Akun Anda</h1>
+        <p style="opacity: 0.9;">Selamat datang kembali! Silakan masuk untuk melanjutkan permainan.</p>
+      </div>
+      
+      <div class="auth-body">
+        <div class="auth-options">
+          <div class="auth-option active" data-type="login">Masuk</div>
+          <div class="auth-option" data-type="register">Daftar</div>
+        </div>
+        
+        <form id="auth-form" data-type="login">
+          <div class="form-group">
+            <label for="email">Email atau Nomor Telepon</label>
+            <input type="email" id="email" class="input-field" required placeholder="nama@example.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Kata Sandi</label>
+            <input type="password" id="password" class="input-field" required placeholder="Masukkan kata sandi">
+          </div>
+          
+          <div class="form-group" style="color: var(--error-color); display: none;" id="auth-error">
+            Terjadi kesalahan. Silakan coba lagi.
+          </div>
+          
+          <button type="submit" id="email-signin" class="btn btn-primary" style="width: 100%;">
+            <i class="fas fa-sign-in-alt"></i> Masuk
+          </button>
+        </form>
+        
+        <div class="social-login">
+          <button id="google-signin" class="social-btn btn-google">
+            <i class="fab fa-google"></i> Masuk dengan Google
+          </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #6c757d;">
+          <a href="lupasandi.html" id="forgot-password" style="color: var(--primary-color);">Lupa kata sandi?</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="dbs.js"></script>
+  <script src="sc.js"></script>
+</body>
+</html>
